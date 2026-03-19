@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Murid Sifir Firebase</title>
+  <style>
+    :root{
+      --bg:#081225;
+      --panel:#22314d;
+      --panel2:#162139;
+      --line:rgba(255,255,255,.12);
+      --text:#f3f4f6;
+      --muted:#c7d2e3;
+      --primary:#8aa2ff;
+      --success:#7ee2b8;
+      --danger:#ff9bab;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:20px;
+    }
+    .wrap{max-width:1300px;margin:0 auto}
+    .topbar{
+      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:1.05fr 1.35fr;
+      gap:18px;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+    }
+    button{
+      border:none;
+      border-radius:12px;
+      padding:11px 14px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .primary{background:var(--primary);color:#fff}
+    .secondary{background:#334155;color:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{color:var(--muted)}
+    .list-item{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      margin-top:10px;
+      cursor:pointer;
+    }
+    .list-item:hover{outline:1px solid rgba(124,156,255,.5)}
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    .kpi{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+    }
+    .kpi .label{color:var(--muted);font-size:.92rem;margin-bottom:6px}
+    .kpi .value{font-size:1.25rem;font-weight:800}
+    .badges-wrap{margin-top:10px}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border-radius:999px;
+      padding:10px 14px;
+      margin:4px 6px 4px 0;
+      border:1px solid var(--line);
+      font-weight:700;
+    }
+    .gold{background:rgba(255,203,107,.16)}
+    .green{background:rgba(101,214,163,.16)}
+    .purple{background:rgba(158,123,255,.18)}
+    .locked-badge{
+      opacity:.35;
+      filter:grayscale(.6);
+      background:rgba(255,255,255,.05) !important;
+    }
+    .levels-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .level-card{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+    }
+    .locked{
+      opacity:.45;
+      pointer-events:none;
+      filter:grayscale(.3);
+    }
+    .question-box{
+      margin-top:18px;
+      background:#0d1730;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+    }
+    .question{
+      font-size:2rem;
+      font-weight:800;
+      text-align:center;
+      margin:18px 0;
+    }
+    .answer-input{
+      width:100%;
+      background:#0b1220;
+      color:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:1.15rem;
+      text-align:center;
+      outline:none;
+    }
+    .feedback{
+      min-height:24px;
+      text-align:center;
+      margin-top:12px;
+      font-weight:700;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+      min-width:650px;
+    }
+    th,td{
+      text-align:left;
+      padding:11px 8px;
+      border-bottom:1px solid var(--line);
+      vertical-align:top;
+    }
+    .table-wrap{overflow:auto}
+    .hidden{display:none}
+    .status{
+      margin-top:12px;
+      min-height:24px;
+      font-weight:700;
+      white-space:pre-wrap;
+    }
+    @media (max-width:1100px){
+      .layout{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <h1>APP SIFIR MURID</h1>
+        <div class="muted">Pilih kelas, pilih nama sendiri, kemudian main ikut level.</div>
+      </div>
+      <div class="row">
+        <button id="backToClassesBtn" class="secondary hidden">← Kembali Kelas</button>
+        <button id="backToStudentsBtn" class="secondary hidden">← Kembali Murid</button>
+        <button id="refreshBtn" class="secondary">Refresh</button>
+      </div>
+    </div>
+
+    <div id="statusMsg" class="status"></div>
+
+    <div id="viewClasses" class="card">
+      <h2>Pilih Kelas</h2>
+      <div id="classesList"></div>
+    </div>
+
+    <div id="viewStudents" class="card hidden">
+      <h2 id="classTitle">Pilih Nama</h2>
+      <div class="muted">Murid hanya perlu tekan nama sendiri. Tiada edit dan padam di sini.</div>
+      <div id="studentsList"></div>
+    </div>
+
+    <div id="viewDashboard" class="layout hidden">
+      <div class="card">
+        <h2>Dashboard Murid</h2>
+        <div class="muted" id="studentHeaderText">Maklumat murid</div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">Nama</div>
+            <div class="value" id="kpiName">-</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Kelas</div>
+            <div class="value" id="kpiClass">-</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Level Tertinggi</div>
+            <div class="value" id="kpiLevel">-</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Skor Terbaik</div>
+            <div class="value" id="kpiScore">-</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Masa Terbaik</div>
+            <div class="value" id="kpiTime">-</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Jumlah Cubaan</div>
+            <div class="value" id="kpiAttempts">-</div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:18px;">Badge Diperoleh</h3>
+        <div id="badgesWrap" class="badges-wrap"></div>
+
+        <h3 style="margin-top:18px;">Sejarah Percubaan</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tarikh</th>
+                <th>Level</th>
+                <th>Markah</th>
+                <th>Masa</th>
+                <th>Badge</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Pilih Level</h2>
+        <div class="muted">Syarat lulus setiap level ialah sekurang-kurangnya <strong>16/20</strong>.</div>
+
+        <div id="levelsWrap" class="levels-grid"></div>
+
+        <div id="quizArea" class="question-box hidden">
+          <div class="row" style="justify-content:space-between;">
+            <div><strong id="quizLevelTitle">Level</strong></div>
+            <div class="muted">Soalan <span id="qNo">0</span>/20 • Markah <span id="score">0</span> • Masa <span id="timer">0.0</span>s</div>
+          </div>
+
+          <div id="questionText" class="question">8 × 2 = ?</div>
+
+          <input id="answerInput" class="answer-input" type="number" placeholder="Taip jawapan dan tekan Enter" />
+
+          <div class="row" style="justify-content:center; margin-top:14px;">
+            <button id="submitBtn" class="primary">Hantar</button>
+            <button id="quitBtn" class="secondary">Keluar Quiz</button>
+          </div>
+
+          <div id="feedback" class="feedback"></div>
+        </div>
+
+        <div id="resultBox" style="margin-top:16px;font-weight:700;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase-config.js";
+    import {
+      collection,
+      getDocs,
+      getDoc,
+      addDoc,
+      updateDoc,
+      doc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const LEVELS = [
+      { id: 1, name: "Level 1", label: "Sifir 2 & 3", tables: [2,3] },
+      { id: 2, name: "Level 2", label: "Sifir 4 & 5", tables: [4,5] },
+      { id: 3, name: "Level 3", label: "Sifir 6 & 7", tables: [6,7] },
+      { id: 4, name: "Level 4", label: "Sifir 8 & 9", tables: [8,9] },
+      { id: 5, name: "Boss Level", label: "Campuran 2 hingga 9", tables: [2,3,4,5,6,7,8,9] }
+    ];
+
+    const BADGES_META = {
+      first_try: { text: "Percubaan Pertama", cls: "purple", icon: "🎯" },
+      score_10: { text: "Tepat 10", cls: "green", icon: "✅" },
+      perfect: { text: "Skor Penuh", cls: "gold", icon: "🏆" },
+      fast: { text: "Sifir Pantas", cls: "green", icon: "⚡" },
+      level_1: { text: "Lulus Level 1", cls: "purple", icon: "🌟" },
+      level_2: { text: "Lulus Level 2", cls: "purple", icon: "🌟" },
+      level_3: { text: "Lulus Level 3", cls: "purple", icon: "🌟" },
+      level_4: { text: "Lulus Level 4", cls: "purple", icon: "🌟" },
+      boss: { text: "Juara Boss Level", cls: "gold", icon: "👑" },
+      attempts_5: { text: "Rajin Berusaha", cls: "green", icon: "💪" }
+    };
+    const ALL_BADGE_KEYS = Object.keys(BADGES_META);
+
+    let selectedClassId = null;
+    let selectedClassName = "";
+    let selectedStudentId = null;
+    let selectedStudent = null;
+
+    let quizState = {
+      active: false,
+      levelId: null,
+      questions: [],
+      index: 0,
+      score: 0,
+      startedAt: 0,
+      timerInterval: null,
+      currentAnswer: null
+    };
+
+    function setStatus(msg, isError = false) {
+      const el = document.getElementById("statusMsg");
+      el.style.color = isError ? "#ff9bab" : "#9fe6bf";
+      el.textContent = msg;
+      console[isError ? "error" : "log"](msg);
+    }
+
+    function show(viewId) {
+      document.getElementById("viewClasses").classList.add("hidden");
+      document.getElementById("viewStudents").classList.add("hidden");
+      document.getElementById("viewDashboard").classList.add("hidden");
+      document.getElementById(viewId).classList.remove("hidden");
+
+      document.getElementById("backToClassesBtn").classList.toggle("hidden", viewId === "viewClasses");
+      document.getElementById("backToStudentsBtn").classList.toggle("hidden", viewId !== "viewDashboard");
+    }
+
+    function getOrderNo(name) {
+      const m = String(name).trim().match(/^(\d+)\s*\./);
+      return m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
+    }
+
+    function sortClassesInJs(arr) {
+      return [...arr].sort((a, b) => {
+        const numA = getOrderNo(a.name);
+        const numB = getOrderNo(b.name);
+        if (numA !== numB) return numA - numB;
+        return a.name.localeCompare(b.name, "ms", { numeric: true, sensitivity: "base" });
+      });
+    }
+
+    function formatTime(sec) {
+      if (sec == null) return "-";
+      return `${Number(sec).toFixed(1)}s`;
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function isLevelUnlocked(student, levelId) {
+      if (levelId === 1) return true;
+      return (student.highestLevel || 0) >= (levelId - 1);
+    }
+
+    function generateBalancedQuestions(tables, total = 20) {
+      const out = [];
+      const per = Math.floor(total / tables.length);
+      const rem = total % tables.length;
+
+      tables.forEach((table, i) => {
+        const need = per + (i < rem ? 1 : 0);
+        let mults = shuffle([1,2,3,4,5,6,7,8,9]);
+        while (mults.length < need) {
+          mults = mults.concat(shuffle([1,2,3,4,5,6,7,8,9]));
+        }
+        mults.slice(0, need).forEach(m => {
+          out.push({ left: m, right: table, answer: m * table });
+        });
+      });
+
+      return shuffle(out);
+    }
+
+    function renderBadges(student) {
+      const wrap = document.getElementById("badgesWrap");
+      wrap.innerHTML = ALL_BADGE_KEYS.map(key => {
+        const b = BADGES_META[key];
+        const unlocked = (student.badges || []).includes(key);
+        return `<span class="badge ${b.cls} ${unlocked ? "" : "locked-badge"}">${b.icon} ${b.text}</span>`;
+      }).join("");
+    }
+
+    function renderLevels(student) {
+      const wrap = document.getElementById("levelsWrap");
+      wrap.innerHTML = LEVELS.map(level => {
+        const unlocked = isLevelUnlocked(student, level.id);
+        return `
+          <div class="level-card ${unlocked ? "" : "locked"}">
+            <div><strong>${level.name}</strong></div>
+            <div class="muted" style="margin:6px 0 10px;">${level.label}</div>
+            <button class="primary" ${unlocked ? `data-level="${level.id}"` : ""}>${unlocked ? "Main" : "Terkunci"}</button>
+          </div>
+        `;
+      }).join("");
+
+      wrap.onclick = (e) => {
+        const levelId = Number(e.target.dataset.level);
+        if (levelId) startLevel(levelId);
+      };
+    }
+
+    async function loadClasses() {
+      try {
+        const snap = await getDocs(collection(db, "classes"));
+        const list = document.getElementById("classesList");
+        list.innerHTML = "";
+
+        const arr = [];
+        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+        const sorted = sortClassesInJs(arr);
+
+        if (!sorted.length) {
+          list.innerHTML = `<div class="muted">Belum ada kelas lagi.</div>`;
+        } else {
+          sorted.forEach(c => {
+            const item = document.createElement("div");
+            item.className = "list-item";
+            item.innerHTML = `
+              <strong>${c.name}</strong><br>
+              <span class="muted">Tekan untuk pilih kelas ini</span>
+            `;
+            item.onclick = async () => {
+              selectedClassId = c.id;
+              selectedClassName = c.name;
+              await loadStudents();
+            };
+            list.appendChild(item);
+          });
+        }
+
+        show("viewClasses");
+        setStatus("Senarai kelas berjaya dimuatkan.");
+      } catch (err) {
+        setStatus("Ralat loadClasses:\n" + err.message, true);
+      }
+    }
+
+    async function loadStudents() {
+      try {
+        const snap = await getDocs(collection(db, "classes", selectedClassId, "students"));
+        const arr = [];
+        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+        arr.sort((a,b) => a.name.localeCompare(b.name, "ms", { sensitivity: "base" }));
+
+        const list = document.getElementById("studentsList");
+        document.getElementById("classTitle").textContent = `Pilih Nama - ${selectedClassName}`;
+        list.innerHTML = "";
+
+        if (!arr.length) {
+          list.innerHTML = `<div class="muted">Tiada murid dalam kelas ini lagi.</div>`;
+        } else {
+          arr.forEach(s => {
+            const item = document.createElement("div");
+            item.className = "list-item";
+            item.innerHTML = `
+              <strong>${s.name}</strong><br>
+              <span class="muted">Tekan nama untuk masuk ke dashboard murid</span>
+            `;
+            item.onclick = async () => {
+              selectedStudentId = s.id;
+              await loadStudent();
+            };
+            list.appendChild(item);
+          });
+        }
+
+        show("viewStudents");
+        setStatus("Senarai murid berjaya dimuatkan.");
+      } catch (err) {
+        setStatus("Ralat loadStudents:\n" + err.message, true);
+      }
+    }
+
+    async function loadStudent() {
+      try {
+        const snap = await getDoc(doc(db, "classes", selectedClassId, "students", selectedStudentId));
+        if (!snap.exists()) return;
+
+        selectedStudent = { id: snap.id, ...snap.data() };
+
+        document.getElementById("kpiName").textContent = selectedStudent.name;
+        document.getElementById("kpiClass").textContent = selectedClassName;
+        document.getElementById("kpiLevel").textContent = selectedStudent.highestLevel || "-";
+        document.getElementById("kpiScore").textContent = `${selectedStudent.bestScore || 0}/20`;
+        document.getElementById("kpiTime").textContent = formatTime(selectedStudent.bestTime);
+        document.getElementById("kpiAttempts").textContent = selectedStudent.attempts || 0;
+        document.getElementById("studentHeaderText").textContent = `${selectedStudent.name} • ${selectedClassName}`;
+
+        renderBadges(selectedStudent);
+        renderLevels(selectedStudent);
+        await loadHistory();
+
+        document.getElementById("resultBox").innerHTML = "";
+        show("viewDashboard");
+        setStatus("Dashboard murid berjaya dimuatkan.");
+      } catch (err) {
+        setStatus("Ralat loadStudent:\n" + err.message, true);
+      }
+    }
+
+    async function loadHistory() {
+      try {
+        const historyBody = document.getElementById("historyBody");
+        const historyRef = collection(db, "classes", selectedClassId, "students", selectedStudentId, "history");
+        const snap = await getDocs(historyRef);
+
+        const rows = [];
+        snap.forEach(d => rows.push(d.data()));
+        rows.sort((a,b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+
+        historyBody.innerHTML = rows.length ? rows.map(r => `
+          <tr>
+            <td>${r.date || "-"}</td>
+            <td>${r.levelName || "-"}</td>
+            <td>${r.score}/20</td>
+            <td>${formatTime(r.time)}</td>
+            <td>${(r.badgesAwarded || []).map(x => BADGES_META[x]?.text || x).join(", ") || "-"}</td>
+          </tr>
+        `).join("") : `<tr><td colspan="5" class="muted">Belum ada rekod lagi.</td></tr>`;
+      } catch (err) {
+        setStatus("Ralat loadHistory:\n" + err.message, true);
+      }
+    }
+
+    function awardBadge(student, key, newly) {
+      student.badges = student.badges || [];
+      if (!student.badges.includes(key)) {
+        student.badges.push(key);
+        newly.push(key);
+      }
+    }
+
+    function startLevel(levelId) {
+      const level = LEVELS.find(x => x.id === levelId);
+      if (!level) return;
+
+      quizState.active = true;
+      quizState.levelId = levelId;
+      quizState.questions = generateBalancedQuestions(level.tables, 20);
+      quizState.index = 0;
+      quizState.score = 0;
+      quizState.startedAt = performance.now();
+
+      document.getElementById("quizArea").classList.remove("hidden");
+      document.getElementById("resultBox").innerHTML = "";
+      document.getElementById("quizLevelTitle").textContent = `${level.name} - ${level.label}`;
+      document.getElementById("feedback").textContent = "";
+
+      showQuestion();
+
+      clearInterval(quizState.timerInterval);
+      quizState.timerInterval = setInterval(() => {
+        document.getElementById("timer").textContent = ((performance.now() - quizState.startedAt) / 1000).toFixed(1);
+      }, 100);
+    }
+
+    function showQuestion() {
+      const q = quizState.questions[quizState.index];
+      quizState.currentAnswer = q.answer;
+      document.getElementById("qNo").textContent = quizState.index + 1;
+      document.getElementById("score").textContent = quizState.score;
+      document.getElementById("questionText").textContent = `${q.left} × ${q.right} = ?`;
+      document.getElementById("answerInput").value = "";
+      document.getElementById("answerInput").focus();
+      document.getElementById("feedback").textContent = "";
+    }
+
+    function submitAnswer() {
+      if (!quizState.active) return;
+
+      const input = document.getElementById("answerInput");
+      const val = Number(input.value);
+      if (String(input.value).trim() === "") return;
+
+      if (val === quizState.currentAnswer) {
+        quizState.score++;
+        document.getElementById("feedback").style.color = "#7df0be";
+        document.getElementById("feedback").textContent = "Betul!";
+      } else {
+        document.getElementById("feedback").style.color = "#ff9bab";
+        document.getElementById("feedback").textContent = `Salah. Jawapan: ${quizState.currentAnswer}`;
+      }
+
+      setTimeout(async () => {
+        quizState.index++;
+        if (quizState.index >= 20) {
+          await finishQuiz();
+        } else {
+          showQuestion();
+        }
+      }, 320);
+    }
+
+    async function finishQuiz() {
+      try {
+        clearInterval(quizState.timerInterval);
+
+        const totalTime = Number(((performance.now() - quizState.startedAt) / 1000).toFixed(1));
+        const passed = quizState.score >= 16;
+        const newly = [];
+        const level = LEVELS.find(x => x.id === quizState.levelId);
+
+        selectedStudent.attempts = (selectedStudent.attempts || 0) + 1;
+
+        const oldBestScore = selectedStudent.bestScore || 0;
+        const oldBestTime = selectedStudent.bestTime;
+
+        if (quizState.score > oldBestScore) {
+          selectedStudent.bestScore = quizState.score;
+          selectedStudent.bestTime = totalTime;
+        } else if (quizState.score === oldBestScore) {
+          if (oldBestTime == null || totalTime < oldBestTime) {
+            selectedStudent.bestTime = totalTime;
+          }
+        }
+
+        if (selectedStudent.attempts === 1) awardBadge(selectedStudent, "first_try", newly);
+        if (selectedStudent.attempts >= 5) awardBadge(selectedStudent, "attempts_5", newly);
+        if (quizState.score >= 10) awardBadge(selectedStudent, "score_10", newly);
+        if (quizState.score === 20) awardBadge(selectedStudent, "perfect", newly);
+        if (totalTime < 35) awardBadge(selectedStudent, "fast", newly);
+
+        if (passed) {
+          selectedStudent.highestLevel = Math.max(selectedStudent.highestLevel || 0, quizState.levelId);
+          if (quizState.levelId >= 1 && quizState.levelId <= 4) awardBadge(selectedStudent, `level_${quizState.levelId}`, newly);
+          if (quizState.levelId === 5) awardBadge(selectedStudent, "boss", newly);
+        }
+
+        await updateDoc(doc(db, "classes", selectedClassId, "students", selectedStudentId), {
+          highestLevel: selectedStudent.highestLevel || 0,
+          bestScore: selectedStudent.bestScore || 0,
+          bestTime: selectedStudent.bestTime ?? null,
+          attempts: selectedStudent.attempts || 0,
+          badges: selectedStudent.badges || [],
+          updatedAt: serverTimestamp()
+        });
+
+        await addDoc(collection(db, "classes", selectedClassId, "students", selectedStudentId, "history"), {
+          levelId: quizState.levelId,
+          levelName: level.name,
+          score: quizState.score,
+          time: totalTime,
+          passed,
+          badgesAwarded: newly,
+          date: new Date().toLocaleString("ms-MY"),
+          createdAt: serverTimestamp(),
+          createdAtMs: Date.now()
+        });
+
+        renderBadges(selectedStudent);
+        renderLevels(selectedStudent);
+        await loadHistory();
+
+        document.getElementById("kpiLevel").textContent = selectedStudent.highestLevel || "-";
+        document.getElementById("kpiScore").textContent = `${selectedStudent.bestScore || 0}/20`;
+        document.getElementById("kpiTime").textContent = formatTime(selectedStudent.bestTime);
+        document.getElementById("kpiAttempts").textContent = selectedStudent.attempts || 0;
+
+        document.getElementById("resultBox").innerHTML = `
+          Markah: ${quizState.score}/20<br>
+          Masa: ${totalTime}s<br>
+          Status: ${passed ? "LULUS" : "BELUM LULUS"}<br>
+          Badge baharu: ${(newly.map(x => BADGES_META[x]?.text || x).join(", ")) || "-"}
+        `;
+
+        quizState.active = false;
+        document.getElementById("quizArea").classList.add("hidden");
+        setStatus("Keputusan berjaya disimpan.");
+      } catch (err) {
+        setStatus("Ralat finishQuiz:\n" + err.message, true);
+      }
+    }
+
+    document.getElementById("submitBtn").addEventListener("click", submitAnswer);
+    document.getElementById("answerInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") submitAnswer();
+    });
+    document.getElementById("quitBtn").addEventListener("click", () => {
+      clearInterval(quizState.timerInterval);
+      quizState.active = false;
+      document.getElementById("quizArea").classList.add("hidden");
+      document.getElementById("feedback").textContent = "";
+      setStatus("Quiz dihentikan.");
+    });
+
+    document.getElementById("backToClassesBtn").addEventListener("click", () => {
+      show("viewClasses");
+      setStatus("Kembali ke senarai kelas.");
+    });
+
+    document.getElementById("backToStudentsBtn").addEventListener("click", async () => {
+      await loadStudents();
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      if (selectedStudentId && selectedClassId) {
+        await loadStudent();
+      } else if (selectedClassId) {
+        await loadStudents();
+      } else {
+        await loadClasses();
+      }
+    });
+
+    await loadClasses();
+  </script>
+</body>
+</html>
