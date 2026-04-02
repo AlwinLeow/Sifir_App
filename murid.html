@@ -311,7 +311,7 @@
     let selectedClassName = "";
     let selectedStudentId = null;
     let selectedStudent = null;
-
+    let answered = false;
     let quizState = {
       active: false,
       levelId: null,
@@ -582,38 +582,47 @@
       document.getElementById("score").textContent = quizState.score;
       document.getElementById("questionText").textContent = `${q.left} × ${q.right} = ?`;
       document.getElementById("answerInput").value = "";
+      answered = false;
+      document.getElementById("submitBtn").disabled = false;
       document.getElementById("answerInput").focus();
       document.getElementById("feedback").textContent = "";
     }
 
-    function submitAnswer() {
-      if (!quizState.active) return;
+function submitAnswer() {
+  if (!quizState.active || answered) return;
 
-      const input = document.getElementById("answerInput");
-      const val = Number(input.value);
-      if (String(input.value).trim() === "") return;
+  const input = document.getElementById("answerInput");
+  const val = Number(input.value);
 
-      if (val === quizState.currentAnswer) {
-        quizState.score++;
-        document.getElementById("feedback").style.color = "#7df0be";
-        document.getElementById("feedback").textContent = "Betul!";
-      } else {
-        document.getElementById("feedback").style.color = "#ff9bab";
-        document.getElementById("feedback").textContent = `Salah. Jawapan: ${quizState.currentAnswer}`;
-      }
+  if (String(input.value).trim() === "") return;
 
-      setTimeout(async () => {
-        quizState.index++;
-        if (quizState.index >= 20) {
-          await finishQuiz();
-        } else {
-          showQuestion();
-        }
-      }, 320);
+  answered = true;
+  document.getElementById("submitBtn").disabled = true;
+
+  if (val === quizState.currentAnswer) {
+    quizState.score++;
+    document.getElementById("feedback").style.color = "#7df0be";
+    document.getElementById("feedback").textContent = "Betul!";
+  } else {
+    document.getElementById("feedback").style.color = "#ff9bab";
+    document.getElementById("feedback").textContent =
+      `Salah. Jawapan: ${quizState.currentAnswer}`;
+  }
+
+  setTimeout(async () => {
+    quizState.index++;
+
+    if (quizState.index >= 20) {
+      await finishQuiz();
+    } else {
+      showQuestion();
     }
+  }, 300);
+}
 
     async function finishQuiz() {
       try {
+        quizState.score = Math.min(quizState.score, 20);
         clearInterval(quizState.timerInterval);
 
         const totalTime = Number(((performance.now() - quizState.startedAt) / 1000).toFixed(1));
