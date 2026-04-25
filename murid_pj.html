@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Murid - Pecahan Juta</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{min-height:100vh;background:linear-gradient(#ffe8b8,#fff6df);color:#2b1708;padding:28px}
+h1{font-size:40px;margin-bottom:10px}
+.sub{font-size:22px;font-weight:bold;margin-bottom:20px}
+.panel{background:#fffaf0;border:4px solid #a8642a;border-radius:24px;padding:25px;margin-top:20px;box-shadow:0 8px 0 #7c4319}
+.list-item{background:#fff3c4;border:3px solid #a8642a;border-radius:18px;padding:15px;margin:10px 0;cursor:pointer}
+.list-item:hover{background:#ffe8b8}
+.title{font-size:22px;font-weight:bold}
+.muted{font-size:18px;color:#6d4c2c}
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.box{background:#fffaf0;border:3px solid #a8642a;border-radius:16px;padding:12px;text-align:center;font-size:20px;font-weight:bold}
+.question{background:linear-gradient(#ffb347,#ffcc70);border-radius:25px;padding:25px;text-align:center;margin-bottom:20px;box-shadow:0 6px 0 #87511e}
+.question small{font-size:20px;font-weight:bold}
+.question div{font-size:50px;font-weight:bold;margin-top:10px}
+.answer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
+.answer-card{border-radius:50%;border:5px solid #9b5a23;background:radial-gradient(circle,#fff7df,#f7d48b,#c77932);height:100px;font-size:20px;font-weight:bold;cursor:pointer}
+.answer-card.hide{opacity:0;transform:scale(0);transition:.4s}
+.answer-card.wrong{background:red;color:white}
+.message{text-align:center;font-size:22px;font-weight:bold;margin:10px}
+.finish{text-align:center}
+.finish-score{font-size:50px;color:#d93a22;font-weight:bold}
+.btn{border:none;border-radius:15px;padding:14px 20px;background:linear-gradient(#63c77f,#2fa052);color:white;font-size:20px;font-weight:bold;margin-top:15px;cursor:pointer}
+</style>
+
+</head>
+
+<body>
+
+<h1>🧑‍🎓 Pecahan Juta</h1>
+<p class="sub">Versi Murid - Pilih kelas → pilih nama → mula permainan</p>
+
+<section id="classScreen" class="panel">
+<h2>Pilih Kelas</h2>
+<div id="classList"></div>
+</section>
+
+<section id="studentScreen" class="panel" style="display:none">
+<h2 id="studentTitle"></h2>
+<div id="studentList"></div>
+</section>
+
+<section id="gameScreen" style="display:none">
+<div class="status">
+<div class="box">Nama: <span id="nameBox"></span></div>
+<div class="box">Kelas: <span id="classBox"></span></div>
+<div class="box">Skor: <span id="scoreBox">0</span>/15</div>
+<div class="box">Masa: <span id="timeBox">0</span>s</div>
+</div>
+
+<div class="question">
+<small>Soalan <span id="qNo">1</span>/15</small>
+<div id="questionText"></div>
+</div>
+
+<div id="message" class="message"></div>
+<div id="answerGrid" class="answer-grid"></div>
+</section>
+
+<section id="finishScreen" class="panel finish" style="display:none">
+<h1>🎉 Tahniah!</h1>
+<div class="finish-score"><span id="finalScore"></span>/15</div>
+<h2>Masa: <span id="finalTime"></span>s</h2>
+<button class="btn" onclick="location.reload()">Main Lagi</button>
+</section>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "pecahan-juta---gamifikasi.firebaseapp.com",
+  projectId: "pecahan-juta---gamifikasi",
+  storageBucket: "pecahan-juta---gamifikasi.firebasestorage.app",
+  messagingSenderId: "...",
+  appId: "...",
+  measurementId: "..."
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const questions=[
+{q:"1/2 juta",a:500000},{q:"1/4 juta",a:250000},{q:"3/4 juta",a:750000},
+{q:"1/5 juta",a:200000},{q:"2/5 juta",a:400000},{q:"3/5 juta",a:600000},
+{q:"4/5 juta",a:800000},{q:"1/8 juta",a:125000},{q:"3/8 juta",a:375000},
+{q:"5/8 juta",a:625000},{q:"7/8 juta",a:875000},{q:"1/10 juta",a:100000},
+{q:"3/10 juta",a:300000},{q:"7/10 juta",a:700000},{q:"9/10 juta",a:900000}
+];
+
+let selectedClass,selectedStudent,qList,current=0,score=0,startTime,timer;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, duration, type="sine"){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function playCorrect(){
+  playTone(660,0.12);
+  setTimeout(()=>playTone(880,0.14),100);
+}
+
+function playWrong(){
+  playTone(180,0.18,"square");
+}
+function shuffle(a){return a.sort(()=>Math.random()-0.5)}
+
+async function loadClasses(){
+try{
+const snap=await getDocs(collection(db,"classes"));
+let arr=[];
+snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+arr.sort((a,b)=>a.name.localeCompare(b.name));
+
+const box=document.getElementById("classList");
+box.innerHTML="";
+
+if(arr.length===0){
+box.innerHTML="<p class='muted'>Belum ada kelas dalam Firebase.</p>";
+return;
+}
+
+arr.forEach(c=>{
+let div=document.createElement("div");
+div.className="list-item";
+div.innerHTML=`<div class="title">${c.name}</div>`;
+div.onclick=()=>openClass(c);
+box.appendChild(div);
+});
+}catch(error){
+document.getElementById("classList").innerHTML=
+"<p style='color:red;font-weight:bold'>Error: " + error.message + "</p>";
+console.error(error);
+}
+}
+
+async function openClass(c){
+selectedClass=c;
+document.getElementById("classScreen").style.display="none";
+document.getElementById("studentScreen").style.display="block";
+document.getElementById("studentTitle").textContent="Kelas: "+c.name;
+
+const snap=await getDocs(query(collection(db,"students"),where("classId","==",c.id)));
+let arr=[];snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+arr.sort((a,b)=>a.name.localeCompare(b.name));
+
+const box=document.getElementById("studentList");
+arr.forEach(s=>{
+let div=document.createElement("div");
+div.className="list-item";
+div.innerHTML=`<div class="title">${s.name}</div>`;
+div.onclick=()=>startGame(s);
+box.appendChild(div);
+});
+}
+
+function startGame(s){
+selectedStudent=s;
+qList=shuffle([...questions]);
+current=0;score=0;startTime=Date.now();
+audioCtx.resume();
+document.getElementById("studentScreen").style.display="none";
+document.getElementById("gameScreen").style.display="block";
+document.getElementById("nameBox").textContent=s.name;
+document.getElementById("classBox").textContent=selectedClass.name;
+
+buildAnswers();
+showQ();
+timer=setInterval(()=>document.getElementById("timeBox").textContent=((Date.now()-startTime)/1000).toFixed(1),100);
+}
+
+function buildAnswers(){
+const grid=document.getElementById("answerGrid");
+grid.innerHTML="";
+shuffle(questions.map(x=>x.a)).forEach(v=>{
+let b=document.createElement("button");
+b.className="answer-card";
+b.textContent=v.toLocaleString();
+b.onclick=()=>choose(v,b);
+grid.appendChild(b);
+});
+}
+
+function showQ(){
+document.getElementById("qNo").textContent=current+1;
+document.getElementById("questionText").textContent=qList[current].q;
+}
+
+function choose(v,b){
+if(v===qList[current].a){
+playCorrect();
+b.classList.add("hide");
+score++;current++;
+document.getElementById("scoreBox").textContent=score;
+if(current<15)showQ();else finish();
+}else{
+playWrong();
+b.classList.add("wrong");
+setTimeout(()=>b.classList.remove("wrong"),300);
+}
+}
+async function finish(){
+clearInterval(timer);
+let time=Number(((Date.now()-startTime)/1000).toFixed(1));
+
+const recordId = selectedClass.id + "_" + selectedStudent.id;
+const recordRef = doc(db, "scores", recordId);
+const oldRecord = await getDoc(recordRef);
+
+let shouldUpdate = false;
+
+if(!oldRecord.exists()){
+  shouldUpdate = true;
+}else{
+  const old = oldRecord.data();
+
+  if(score > old.score){
+    shouldUpdate = true;
+  }else if(score === old.score && time < old.time){
+    shouldUpdate = true;
+  }
+}
+
+if(shouldUpdate){
+  await setDoc(recordRef,{
+    classId:selectedClass.id,
+    className:selectedClass.name,
+    studentId:selectedStudent.id,
+    name:selectedStudent.name,
+    score:score,
+    time:time,
+    createdAt: oldRecord.exists() ? oldRecord.data().createdAt : serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+}
+
+// ❗ PAPAR RESULT MESTI DI LUAR IF
+document.getElementById("gameScreen").style.display="none";
+document.getElementById("finishScreen").style.display="block";
+document.getElementById("finalScore").textContent=score;
+document.getElementById("finalTime").textContent=time;
+}
+
+loadClasses();
+</script>
+
+</body>
+</html>

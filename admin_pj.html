@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Pecahan Juta</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{min-height:100vh;background:linear-gradient(#ffe8b8,#fff6df);color:#2b1708;padding:28px}
+.hero{background:linear-gradient(135deg,#ffb347,#ffcf73);border:5px solid #a8642a;border-radius:28px;padding:25px;text-align:center;box-shadow:0 10px 0 #7c4319;margin-bottom:24px}
+h1{font-size:44px}h2{font-size:34px;margin-bottom:16px}
+.sub{font-size:22px;font-weight:bold;margin-top:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.panel{background:#fffaf0;border:4px solid #a8642a;border-radius:24px;padding:26px;box-shadow:0 8px 0 #7c4319}
+label{font-size:22px;font-weight:bold}
+input,select{width:100%;padding:15px 18px;border:3px solid #c58b4d;border-radius:16px;font-size:21px;margin:10px 0 18px;background:white}
+.btn{border:0;border-radius:18px;padding:15px 25px;background:linear-gradient(#ff6b4a,#e33d25);color:white;font-size:22px;font-weight:bold;cursor:pointer;box-shadow:0 5px 0 #9b2315;margin:6px}
+.btn.green{background:linear-gradient(#63c77f,#2fa052);box-shadow:0 5px 0 #1f6d38}
+.btn.blue{background:linear-gradient(#5b6ee1,#3546ad);box-shadow:0 5px 0 #222b72}
+.btn.red{background:linear-gradient(#d94b4b,#a72b2b);box-shadow:0 5px 0 #6c1717}
+.class-card,.student-card{background:#fff3c4;border:3px solid #a8642a;border-radius:20px;padding:15px;margin:12px 0;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.title{font-size:23px;font-weight:bold}
+.muted{font-size:18px;color:#6d4c2c}
+.msg{font-size:20px;font-weight:bold;color:#2c9c50;margin:10px 0}
+table{width:100%;border-collapse:collapse;margin-top:15px;background:white;border-radius:15px;overflow:hidden}
+th,td{border:1px solid #e2c69a;padding:12px;text-align:center;font-size:19px}
+th{background:#ffcc70}
+.top-btn{text-align:right;margin-bottom:15px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}h1{font-size:34px}}
+</style>
+</head>
+
+<body>
+
+<div class="top-btn">
+<button class="btn blue" onclick="location.href='Murid_Pecahan.html'">Buka Versi Murid</button>
+<button class="btn green" onclick="loadAll()">Refresh</button>
+</div>
+
+<div class="hero">
+<h1>👩‍🏫 Pecahan Juta</h1>
+<p class="sub">Tambah kelas, taip nama murid dan semak ranking.</p>
+</div>
+
+<div class="grid">
+
+<section class="panel">
+<h2>Tambah Kelas</h2>
+<label>Nama kelas</label>
+<input id="className" placeholder="Contoh: 6 JUJUR">
+<button class="btn green" onclick="addClass()">Tambah Kelas</button>
+<div id="msg" class="msg">Sistem admin sedang dimuatkan.</div>
+
+<h2>Senarai Kelas</h2>
+<div id="classList"></div>
+</section>
+
+<section class="panel">
+<h2 id="openTitle">Buka Kelas</h2>
+
+<div id="studentPanel" style="display:none">
+<label>Nama murid</label>
+<input id="studentName" placeholder="Taip nama murid">
+<button class="btn green" onclick="addStudent()">Tambah Murid</button>
+
+<h2>Senarai Murid</h2>
+<div id="studentList"></div>
+
+<h2>Ranking Murid</h2>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Nama</th>
+<th>Skor</th>
+<th>Masa</th>
+<th>Tarikh</th>
+</tr>
+</thead>
+<tbody id="rankingBody"></tbody>
+</table>
+</div>
+</section>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+getFirestore, collection, addDoc, getDocs, deleteDoc, doc,
+query, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* GANTI DENGAN FIREBASE CONFIG CIKGU */
+const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "pecahan-juta---gamifikasi.firebaseapp.com",
+  projectId: "pecahan-juta---gamifikasi",
+  storageBucket: "pecahan-juta---gamifikasi.firebasestorage.app",
+  messagingSenderId: "...",
+  appId: "...",
+  measurementId: "..."
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let classes = [];
+let selectedClass = null;
+
+function msg(t){document.getElementById("msg").textContent=t}
+
+async function addClass(){
+const name=document.getElementById("className").value.trim();
+if(!name)return alert("Sila taip nama kelas.");
+await addDoc(collection(db,"classes"),{name,createdAt:serverTimestamp()});
+document.getElementById("className").value="";
+msg("Kelas berjaya ditambah.");
+loadAll();
+}
+
+async function deleteClass(id,name){
+if(!confirm("Padam kelas "+name+"?"))return;
+
+const sSnap=await getDocs(query(collection(db,"students"),where("classId","==",id)));
+for(const s of sSnap.docs){await deleteDoc(doc(db,"students",s.id));}
+
+const rSnap=await getDocs(query(collection(db,"scores"),where("classId","==",id)));
+for(const r of rSnap.docs){await deleteDoc(doc(db,"scores",r.id));}
+
+await deleteDoc(doc(db,"classes",id));
+selectedClass=null;
+document.getElementById("studentPanel").style.display="none";
+msg("Kelas telah dipadam.");
+loadAll();
+}
+
+async function loadClasses(){
+const snap=await getDocs(collection(db,"classes"));
+classes=[];
+snap.forEach(d=>classes.push({id:d.id,...d.data()}));
+classes.sort((a,b)=>a.name.localeCompare(b.name));
+
+const box=document.getElementById("classList");
+box.innerHTML="";
+
+if(classes.length===0){
+box.innerHTML="<p class='muted'>Belum ada kelas.</p>";
+return;
+}
+
+classes.forEach(c=>{
+const div=document.createElement("div");
+div.className="class-card";
+div.innerHTML=`
+<div>
+<div class="title">${c.name}</div>
+<div class="muted">Tekan buka untuk tambah murid</div>
+</div>
+<div>
+<button class="btn blue" onclick="openClass('${c.id}')">Buka</button>
+<button class="btn red" onclick="deleteClass('${c.id}','${c.name.replaceAll("'","\\'")}')">Padam</button>
+</div>`;
+box.appendChild(div);
+});
+}
+
+async function openClass(id){
+selectedClass=classes.find(c=>c.id===id);
+document.getElementById("studentPanel").style.display="block";
+document.getElementById("openTitle").textContent="Kelas: "+selectedClass.name;
+await loadStudents();
+await loadRanking();
+}
+
+async function addStudent(){
+if(!selectedClass)return alert("Sila buka kelas dahulu.");
+const name=document.getElementById("studentName").value.trim().toUpperCase();
+if(!name)return alert("Sila taip nama murid.");
+
+await addDoc(collection(db,"students"),{
+name,
+classId:selectedClass.id,
+className:selectedClass.name,
+createdAt:serverTimestamp()
+});
+
+document.getElementById("studentName").value="";
+loadStudents();
+}
+
+async function deleteStudent(id,name){
+if(!confirm("Padam nama "+name+"?"))return;
+await deleteDoc(doc(db,"students",id));
+loadStudents();
+}
+
+async function loadStudents(){
+const box=document.getElementById("studentList");
+box.innerHTML="";
+
+const snap=await getDocs(query(collection(db,"students"),where("classId","==",selectedClass.id)));
+let arr=[];
+snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+arr.sort((a,b)=>a.name.localeCompare(b.name));
+
+if(arr.length===0){
+box.innerHTML="<p class='muted'>Belum ada nama murid.</p>";
+return;
+}
+
+arr.forEach(s=>{
+const div=document.createElement("div");
+div.className="student-card";
+div.innerHTML=`
+<div>
+<div class="title">${s.name}</div>
+<div class="muted">${s.className}</div>
+</div>
+<button class="btn red" onclick="deleteStudent('${s.id}','${s.name.replaceAll("'","\\'")}')">Padam</button>`;
+box.appendChild(div);
+});
+}
+
+async function loadRanking(){
+const body=document.getElementById("rankingBody");
+body.innerHTML="";
+
+const snap=await getDocs(query(collection(db,"scores"),where("classId","==",selectedClass.id)));
+let arr=[];
+snap.forEach(d=>arr.push(d.data()));
+
+arr.sort((a,b)=>(b.score-a.score)||(a.time-b.time));
+
+if(arr.length===0){
+body.innerHTML="<tr><td colspan='5'>Belum ada skor.</td></tr>";
+return;
+}
+
+arr.forEach((s,i)=>{
+const dateField = s.updatedAt || s.createdAt;
+const date = dateField?.toDate ? dateField.toDate().toLocaleString("ms-MY") : "-";
+body.innerHTML+=`
+<tr>
+<td>${i+1}</td>
+<td>${s.name}</td>
+<td>${s.score}/15</td>
+<td>${s.time}s</td>
+<td>${date}</td>
+</tr>`;
+});
+}
+
+async function loadAll(){
+await loadClasses();
+if(selectedClass){
+const id=selectedClass.id;
+selectedClass=classes.find(c=>c.id===id);
+if(selectedClass)await openClass(id);
+}
+msg("Sistem admin berjaya dimuatkan.");
+}
+
+window.addClass=addClass;
+window.deleteClass=deleteClass;
+window.openClass=openClass;
+window.addStudent=addStudent;
+window.deleteStudent=deleteStudent;
+window.loadAll=loadAll;
+
+loadAll();
+</script>
+
+</body>
+</html>
