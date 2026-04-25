@@ -1,720 +1,275 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Sifir Firebase</title>
-  <style>
-    :root{
-      --bg:#081225;
-      --panel:#22314d;
-      --panel2:#162139;
-      --line:rgba(255,255,255,.12);
-      --text:#f3f4f6;
-      --muted:#c7d2e3;
-      --primary:#8aa2ff;
-      --danger:#ff8fa0;
-      --success:#7ee2b8;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Arial, Helvetica, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      padding:28px;
-    }
-    .wrap{max-width:1400px;margin:0 auto}
-    h1,h2,h3{margin:0 0 10px}
-    .topbar{
-      display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;
-      margin-bottom:18px;
-    }
-    .layout{
-      display:grid;
-      grid-template-columns:1.05fr 1.35fr;
-      gap:18px;
-    }
-    .card{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:22px;
-      padding:22px;
-    }
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    input{
-      background:#071226;
-      color:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px 16px;
-      min-width:280px;
-      outline:none;
-      font-size:1rem;
-    }
-    button{
-      border:none;
-      border-radius:16px;
-      padding:14px 18px;
-      cursor:pointer;
-      font-weight:700;
-      font-size:1rem;
-    }
-    .primary{background:var(--primary);color:#fff}
-    .secondary{background:#334155;color:#fff}
-    .danger{background:#7b3040;color:#fff}
-    .success{background:var(--success);color:#082217}
-    .muted{color:var(--muted)}
-    .class-item,.student-item{
-      background:var(--panel2);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-      margin-top:10px;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
-      gap:12px;
-      margin-top:12px;
-    }
-    .stat-box{
-      background:var(--panel2);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px;
-    }
-    .stat-label{color:var(--muted);font-size:.92rem;margin-bottom:6px}
-    .stat-value{font-size:1.25rem;font-weight:800}
-    table{
-      width:100%;
-      border-collapse:collapse;
-      margin-top:12px;
-      min-width:720px;
-    }
-    th,td{
-      text-align:left;
-      padding:11px 8px;
-      border-bottom:1px solid var(--line);
-      vertical-align:top;
-    }
-    .table-wrap{overflow:auto}
-    .summary-box{
-      margin-top:12px;
-      background:var(--panel2);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px;
-    }
-    .summary-box ul{
-      margin:8px 0 0 20px;
-      line-height:1.8;
-    }
-    .status{
-      margin-top:12px;
-      min-height:24px;
-      font-weight:700;
-      white-space:pre-wrap;
-    }
-    .hidden{display:none}
-    @media (max-width:1100px){
-      .layout{grid-template-columns:1fr}
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Pecahan Juta</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{min-height:100vh;background:linear-gradient(#ffe8b8,#fff6df);color:#2b1708;padding:28px}
+.hero{background:linear-gradient(135deg,#ffb347,#ffcf73);border:5px solid #a8642a;border-radius:28px;padding:25px;text-align:center;box-shadow:0 10px 0 #7c4319;margin-bottom:24px}
+h1{font-size:44px}h2{font-size:34px;margin-bottom:16px}
+.sub{font-size:22px;font-weight:bold;margin-top:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.panel{background:#fffaf0;border:4px solid #a8642a;border-radius:24px;padding:26px;box-shadow:0 8px 0 #7c4319}
+label{font-size:22px;font-weight:bold}
+input,select{width:100%;padding:15px 18px;border:3px solid #c58b4d;border-radius:16px;font-size:21px;margin:10px 0 18px;background:white}
+.btn{border:0;border-radius:18px;padding:15px 25px;background:linear-gradient(#ff6b4a,#e33d25);color:white;font-size:22px;font-weight:bold;cursor:pointer;box-shadow:0 5px 0 #9b2315;margin:6px}
+.btn.green{background:linear-gradient(#63c77f,#2fa052);box-shadow:0 5px 0 #1f6d38}
+.btn.blue{background:linear-gradient(#5b6ee1,#3546ad);box-shadow:0 5px 0 #222b72}
+.btn.red{background:linear-gradient(#d94b4b,#a72b2b);box-shadow:0 5px 0 #6c1717}
+.class-card,.student-card{background:#fff3c4;border:3px solid #a8642a;border-radius:20px;padding:15px;margin:12px 0;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.title{font-size:23px;font-weight:bold}
+.muted{font-size:18px;color:#6d4c2c}
+.msg{font-size:20px;font-weight:bold;color:#2c9c50;margin:10px 0}
+table{width:100%;border-collapse:collapse;margin-top:15px;background:white;border-radius:15px;overflow:hidden}
+th,td{border:1px solid #e2c69a;padding:12px;text-align:center;font-size:19px}
+th{background:#ffcc70}
+.top-btn{text-align:right;margin-bottom:15px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}h1{font-size:34px}}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div>
-        <h1>ADMIN - SIFIR FIREBASE</h1>
-        <div class="muted">Versi guru untuk urus kelas, murid, statistik dan eksport laporan.</div>
-      </div>
-      <div class="row">
-        <button id="openMuridBtn" class="success">Buka Versi Murid</button>
-        <button id="refreshBtn" class="secondary">Refresh</button>
-      </div>
-    </div>
-
-    <div class="layout">
-      <div class="card">
-        <h2>Tambah Kelas</h2>
-        <div class="muted">Guna format seperti <strong>17. 5 Jujur</strong> supaya susunan automatik tepat.</div>
-        <div class="row" style="margin-top:12px;">
-          <input id="classNameInput" placeholder="Contoh: 17. 5 Jujur" />
-          <button id="addClassBtn" class="primary">Tambah Kelas</button>
-        </div>
-        <div id="statusMsg" class="status"></div>
-
-        <h3 style="margin-top:22px;">Senarai Kelas</h3>
-        <div id="classesList"></div>
-      </div>
-
-      <div id="classPanel" class="card hidden">
-        <h2 id="selectedClassTitle">Kelas</h2>
-        <div class="muted">Tambah, edit, padam murid dan lihat analisis kelas.</div>
-
-        <div class="row" style="margin-top:12px;">
-          <input id="studentNameInput" placeholder="Nama murid" />
-          <button id="addStudentBtn" class="primary">Tambah Murid</button>
-          <button id="sortStudentBtn" class="secondary">Susun A-Z</button>
-          <button id="exportCsvBtn" class="success">Eksport CSV</button>
-        </div>
-
-        <h3 style="margin-top:22px;">Senarai Murid</h3>
-        <div id="studentsList"></div>
-
-        <h3 style="margin-top:22px;">Ranking Kelas</h3>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Nama</th>
-                <th>Level Tertinggi</th>
-                <th>Skor Terbaik</th>
-                <th>Masa Terbaik</th>
-                <th>Jumlah Cubaan</th>
-              </tr>
-            </thead>
-            <tbody id="rankingBody"></tbody>
-          </table>
-        </div>
-
-        <h3 style="margin-top:22px;">Statistik Kelas</h3>
-        <div id="classStatsGrid" class="stats-grid"></div>
-
-        <div class="summary-box">
-          <strong>Ringkasan Kelas</strong>
-          <div id="classSummaryText"></div>
-        </div>
-
-        <div class="summary-box">
-          <strong>Ringkasan Badge Kelas</strong>
-          <div id="classBadgeSummaryText"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { db } from "./firebase-config.js";
-    import {
-      collection,
-      addDoc,
-      getDocs,
-      getDoc,
-      updateDoc,
-      deleteDoc,
-      doc,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const BADGES_META = {
-      first_try: "Percubaan Pertama",
-      score_10: "Tepat 10",
-      perfect: "Skor Penuh",
-      fast: "Sifir Pantas",
-      level_1: "Lulus Level 1",
-      level_2: "Lulus Level 2",
-      level_3: "Lulus Level 3",
-      level_4: "Lulus Level 4",
-      boss: "Juara Boss Level",
-      attempts_5: "Rajin Berusaha"
-    };
-
-    let selectedClassId = null;
-    let selectedClassName = "";
-    let selectedStudents = [];
-
-    function setStatus(msg, isError = false) {
-      const el = document.getElementById("statusMsg");
-      el.style.color = isError ? "#ff9bab" : "#9fe6bf";
-      el.textContent = msg;
-      console[isError ? "error" : "log"](msg);
-    }
-
-    function getOrderNo(name) {
-      const m = String(name).trim().match(/^(\d+)\s*\./);
-      return m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
-    }
-
-    function csvEscape(value) {
-      const str = String(value ?? "");
-      return `"${str.replace(/"/g, '""')}"`;
-    }
-
-    function sortClassesInJs(arr) {
-      return [...arr].sort((a, b) => {
-        const numA = getOrderNo(a.name);
-        const numB = getOrderNo(b.name);
-        if (numA !== numB) return numA - numB;
-        return a.name.localeCompare(b.name, "ms", { numeric: true, sensitivity: "base" });
-      });
-    }
-
-    function sortRanking(arr) {
-      return [...arr].sort((a,b) => {
-        const scoreDiff = (b.bestScore || 0) - (a.bestScore || 0);
-        if (scoreDiff !== 0) return scoreDiff;
-        const at = a.bestTime ?? Infinity;
-        const bt = b.bestTime ?? Infinity;
-        return at - bt;
-      });
-    }
-
-    function formatTime(val) {
-      if (val == null || val === "") return "-";
-      return `${Number(val).toFixed(1)}s`;
-    }
-
-    function getClassStats(students) {
-      const totalStudents = students.length;
-      const playedStudents = students.filter(s => (s.attempts || 0) > 0).length;
-      const totalAttempts = students.reduce((sum, s) => sum + (s.attempts || 0), 0);
-
-      const bestScores = students.filter(s => (s.bestScore || 0) > 0).map(s => s.bestScore);
-      const avgBestScore = bestScores.length
-        ? bestScores.reduce((a,b) => a+b, 0) / bestScores.length
-        : 0;
-
-      const bestTimes = students.filter(s => s.bestTime != null).map(s => Number(s.bestTime));
-      const avgBestTime = bestTimes.length
-        ? bestTimes.reduce((a,b) => a+b, 0) / bestTimes.length
-        : null;
-
-      const levelCounts = {
-        level1: students.filter(s => (s.highestLevel || 0) >= 1).length,
-        level2: students.filter(s => (s.highestLevel || 0) >= 2).length,
-        level3: students.filter(s => (s.highestLevel || 0) >= 3).length,
-        level4: students.filter(s => (s.highestLevel || 0) >= 4).length,
-        boss: students.filter(s => (s.highestLevel || 0) >= 5).length,
-      };
-
-      const badgeCounts = {};
-      Object.keys(BADGES_META).forEach(key => {
-        badgeCounts[key] = students.filter(s => (s.badges || []).includes(key)).length;
-      });
-
-      return { totalStudents, playedStudents, totalAttempts, avgBestScore, avgBestTime, levelCounts, badgeCounts };
-    }
-
-    async function loadClasses() {
-      try {
-        const snap = await getDocs(collection(db, "classes"));
-        const list = document.getElementById("classesList");
-        list.innerHTML = "";
-
-        const arr = [];
-        snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
-        const sorted = sortClassesInJs(arr);
-
-        if (!sorted.length) {
-          list.innerHTML = `<div class="muted" style="margin-top:10px;">Belum ada kelas lagi.</div>`;
-          return;
-        }
-
-        sorted.forEach(c => {
-          const item = document.createElement("div");
-          item.className = "class-item";
-          item.innerHTML = `
-            <div>
-              <strong>${c.name}</strong><br>
-              <span class="muted">No. susunan: ${c.orderNo ?? "-"}</span>
-            </div>
-            <div class="row">
-              <button class="secondary" data-open="${c.id}">Buka</button>
-              <button class="secondary" data-edit="${c.id}">Edit</button>
-              <button class="danger" data-delete="${c.id}">Padam</button>
-            </div>
-          `;
-          list.appendChild(item);
-        });
-
-        list.onclick = async (e) => {
-          const openId = e.target.dataset.open;
-          const editId = e.target.dataset.edit;
-          const deleteId = e.target.dataset.delete;
-
-          if (openId) await openClass(openId);
-          if (editId) await editClass(editId);
-          if (deleteId) await deleteClass(deleteId);
-        };
-      } catch (err) {
-        setStatus("Ralat loadClasses:\n" + err.message, true);
-      }
-    }
-
-    async function addClass() {
-      try {
-        const input = document.getElementById("classNameInput");
-        const name = input.value.trim();
-        if (!name) {
-          setStatus("Masukkan nama kelas dahulu.", true);
-          return;
-        }
-
-        await addDoc(collection(db, "classes"), {
-          name,
-          orderNo: getOrderNo(name),
-          createdAt: serverTimestamp()
-        });
-
-        input.value = "";
-        setStatus("Kelas berjaya ditambah.");
-        await loadClasses();
-      } catch (err) {
-        setStatus("Ralat addClass:\n" + err.message, true);
-      }
-    }
-
-    async function editClass(id) {
-      try {
-        const ref = doc(db, "classes", id);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return;
-
-        const oldName = snap.data().name;
-        const newName = prompt("Edit nama kelas:", oldName);
-        if (newName === null) return;
-
-        const trimmed = newName.trim();
-        if (!trimmed) {
-          setStatus("Nama kelas tidak boleh kosong.", true);
-          return;
-        }
-
-        await updateDoc(ref, {
-          name: trimmed,
-          orderNo: getOrderNo(trimmed)
-        });
-
-        if (selectedClassId === id) {
-          selectedClassName = trimmed;
-          document.getElementById("selectedClassTitle").textContent = trimmed;
-        }
-
-        setStatus("Nama kelas berjaya dikemas kini.");
-        await loadClasses();
-      } catch (err) {
-        setStatus("Ralat editClass:\n" + err.message, true);
-      }
-    }
-
-    async function deleteClass(id) {
-      try {
-        if (!confirm("Padam kelas ini?")) return;
-        await deleteDoc(doc(db, "classes", id));
-
-        if (selectedClassId === id) {
-          selectedClassId = null;
-          selectedClassName = "";
-          selectedStudents = [];
-          document.getElementById("classPanel").classList.add("hidden");
-        }
-
-        setStatus("Kelas berjaya dipadam.");
-        await loadClasses();
-      } catch (err) {
-        setStatus("Ralat deleteClass:\n" + err.message, true);
-      }
-    }
-
-    async function openClass(id) {
-      try {
-        const snap = await getDoc(doc(db, "classes", id));
-        if (!snap.exists()) return;
-
-        selectedClassId = id;
-        selectedClassName = snap.data().name;
-        document.getElementById("selectedClassTitle").textContent = selectedClassName;
-        document.getElementById("classPanel").classList.remove("hidden");
-
-        await loadStudents();
-      } catch (err) {
-        setStatus("Ralat openClass:\n" + err.message, true);
-      }
-    }
-
-    async function loadStudents() {
-      try {
-        if (!selectedClassId) return;
-
-        const snap = await getDocs(collection(db, "classes", selectedClassId, "students"));
-        const list = document.getElementById("studentsList");
-        const rankingBody = document.getElementById("rankingBody");
-
-        selectedStudents = [];
-        list.innerHTML = "";
-
-        snap.forEach(d => {
-          const s = { id: d.id, ...d.data() };
-          selectedStudents.push(s);
-
-          const row = document.createElement("div");
-          row.className = "student-item";
-          row.innerHTML = `
-            <div>
-              <strong>${s.name}</strong><br>
-              <span class="muted">Level ${s.highestLevel || 0} • ${s.bestScore || 0}/20 • ${s.bestTime == null ? "-" : Number(s.bestTime).toFixed(1)}s • Cubaan ${s.attempts || 0}</span>
-            </div>
-            <div class="row">
-              <button class="secondary" data-edit-student="${s.id}">Edit</button>
-              <button class="danger" data-delete-student="${s.id}">Padam</button>
-            </div>
-          `;
-          list.appendChild(row);
-        });
-
-        list.onclick = async (e) => {
-          const editId = e.target.dataset.editStudent;
-          const deleteId = e.target.dataset.deleteStudent;
-          if (editId) await editStudent(editId);
-          if (deleteId) await deleteStudent(deleteId);
-        };
-
-        const ranked = sortRanking(selectedStudents);
-        rankingBody.innerHTML = ranked.map((s, i) => `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${s.name}</td>
-            <td>${s.highestLevel || 0}</td>
-            <td>${s.bestScore || 0}/20</td>
-            <td>${formatTime(s.bestTime)}</td>
-            <td>${s.attempts || 0}</td>
-          </tr>
-        `).join("");
-
-        renderClassStats();
-      } catch (err) {
-        setStatus("Ralat loadStudents:\n" + err.message, true);
-      }
-    }
-
-    function renderClassStats() {
-      const stats = getClassStats(selectedStudents);
-      const statsGrid = document.getElementById("classStatsGrid");
-      const summaryText = document.getElementById("classSummaryText");
-      const badgeSummaryText = document.getElementById("classBadgeSummaryText");
-
-      statsGrid.innerHTML = `
-        <div class="stat-box"><div class="stat-label">Jumlah Murid</div><div class="stat-value">${stats.totalStudents}</div></div>
-        <div class="stat-box"><div class="stat-label">Murid Pernah Bermain</div><div class="stat-value">${stats.playedStudents}</div></div>
-        <div class="stat-box"><div class="stat-label">Jumlah Percubaan</div><div class="stat-value">${stats.totalAttempts}</div></div>
-        <div class="stat-box"><div class="stat-label">Purata Skor Terbaik</div><div class="stat-value">${stats.avgBestScore.toFixed(1)}/20</div></div>
-        <div class="stat-box"><div class="stat-label">Purata Masa Terbaik</div><div class="stat-value">${stats.avgBestTime == null ? "-" : formatTime(stats.avgBestTime)}</div></div>
-        <div class="stat-box"><div class="stat-label">Boss Level</div><div class="stat-value">${stats.levelCounts.boss}</div></div>
-      `;
-
-      summaryText.innerHTML = `
-        <ul>
-          <li>${stats.levelCounts.level1} murid sudah lulus Level 1</li>
-          <li>${stats.levelCounts.level2} murid sudah lulus Level 2</li>
-          <li>${stats.levelCounts.level3} murid sudah lulus Level 3</li>
-          <li>${stats.levelCounts.level4} murid sudah lulus Level 4</li>
-          <li>${stats.levelCounts.boss} murid sudah sampai Boss Level</li>
-          <li>${stats.playedStudents} daripada ${stats.totalStudents} murid sudah mencuba permainan</li>
-          <li>Jumlah keseluruhan percubaan kelas ialah ${stats.totalAttempts}</li>
-        </ul>
-      `;
-
-      badgeSummaryText.innerHTML = `
-        <ul>
-          <li>${stats.badgeCounts.first_try} murid memperoleh badge Percubaan Pertama</li>
-          <li>${stats.badgeCounts.score_10} murid memperoleh badge Tepat 10</li>
-          <li>${stats.badgeCounts.perfect} murid memperoleh badge Skor Penuh</li>
-          <li>${stats.badgeCounts.fast} murid memperoleh badge Sifir Pantas</li>
-          <li>${stats.badgeCounts.attempts_5} murid memperoleh badge Rajin Berusaha</li>
-          <li>${stats.badgeCounts.boss} murid memperoleh badge Juara Boss Level</li>
-        </ul>
-      `;
-    }
-
-    async function addStudent() {
-      try {
-        if (!selectedClassId) {
-          setStatus("Buka kelas dahulu.", true);
-          return;
-        }
-
-        const input = document.getElementById("studentNameInput");
-        const name = input.value.trim();
-        if (!name) {
-          setStatus("Masukkan nama murid dahulu.", true);
-          return;
-        }
-
-        await addDoc(collection(db, "classes", selectedClassId, "students"), {
-          name,
-          highestLevel: 0,
-          bestScore: 0,
-          bestTime: null,
-          attempts: 0,
-          badges: [],
-          updatedAt: serverTimestamp()
-        });
-
-        input.value = "";
-        setStatus("Murid berjaya ditambah.");
-        await loadStudents();
-      } catch (err) {
-        setStatus("Ralat addStudent:\n" + err.message, true);
-      }
-    }
-
-    async function editStudent(studentId) {
-      try {
-        const ref = doc(db, "classes", selectedClassId, "students", studentId);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) return;
-
-        const oldName = snap.data().name;
-        const newName = prompt("Edit nama murid:", oldName);
-        if (newName === null) return;
-
-        const trimmed = newName.trim();
-        if (!trimmed) {
-          setStatus("Nama murid tidak boleh kosong.", true);
-          return;
-        }
-
-        await updateDoc(ref, {
-          name: trimmed,
-          updatedAt: serverTimestamp()
-        });
-
-        setStatus("Nama murid berjaya dikemas kini.");
-        await loadStudents();
-      } catch (err) {
-        setStatus("Ralat editStudent:\n" + err.message, true);
-      }
-    }
-
-    async function deleteStudent(studentId) {
-      try {
-        if (!confirm("Padam murid ini?")) return;
-        await deleteDoc(doc(db, "classes", selectedClassId, "students", studentId));
-        setStatus("Murid berjaya dipadam.");
-        await loadStudents();
-      } catch (err) {
-        setStatus("Ralat deleteStudent:\n" + err.message, true);
-      }
-    }
-
-    async function sortStudentsAZ() {
-      try {
-        selectedStudents.sort((a,b) => a.name.localeCompare(b.name, "ms", { sensitivity: "base" }));
-        const list = document.getElementById("studentsList");
-        list.innerHTML = selectedStudents.map(s => `
-          <div class="student-item">
-            <div>
-              <strong>${s.name}</strong><br>
-              <span class="muted">Level ${s.highestLevel || 0} • ${s.bestScore || 0}/20 • ${s.bestTime == null ? "-" : Number(s.bestTime).toFixed(1)}s • Cubaan ${s.attempts || 0}</span>
-            </div>
-            <div class="row">
-              <button class="secondary" data-edit-student="${s.id}">Edit</button>
-              <button class="danger" data-delete-student="${s.id}">Padam</button>
-            </div>
-          </div>
-        `).join("");
-        setStatus("Senarai murid disusun A-Z.");
-      } catch (err) {
-        setStatus("Ralat sortStudentsAZ:\n" + err.message, true);
-      }
-    }
-
-    async function exportClassCsv() {
-      try {
-        if (!selectedClassId) {
-          setStatus("Buka kelas dahulu.", true);
-          return;
-        }
-
-        const rows = [];
-        const stats = getClassStats(selectedStudents);
-
-        rows.push(["LAPORAN KELAS"]);
-        rows.push(["Nama Kelas", selectedClassName]);
-        rows.push(["Tarikh Eksport", new Date().toLocaleString("ms-MY")]);
-        rows.push([]);
-
-        rows.push(["STATISTIK KELAS"]);
-        rows.push(["Jumlah Murid", stats.totalStudents]);
-        rows.push(["Murid Pernah Bermain", stats.playedStudents]);
-        rows.push(["Jumlah Percubaan", stats.totalAttempts]);
-        rows.push(["Purata Skor Terbaik", stats.avgBestScore.toFixed(1)]);
-        rows.push(["Purata Masa Terbaik (s)", stats.avgBestTime == null ? "" : stats.avgBestTime.toFixed(1)]);
-        rows.push(["Lulus Level 1", stats.levelCounts.level1]);
-        rows.push(["Lulus Level 2", stats.levelCounts.level2]);
-        rows.push(["Lulus Level 3", stats.levelCounts.level3]);
-        rows.push(["Lulus Level 4", stats.levelCounts.level4]);
-        rows.push(["Sampai Boss Level", stats.levelCounts.boss]);
-        rows.push([]);
-
-        rows.push(["RINGKASAN BADGE KELAS"]);
-        Object.keys(BADGES_META).forEach(key => {
-          rows.push([BADGES_META[key], stats.badgeCounts[key]]);
-        });
-        rows.push([]);
-
-        rows.push(["DATA MURID"]);
-        rows.push(["Bil", "Nama Murid", "Level Tertinggi", "Skor Terbaik", "Masa Terbaik (s)", "Jumlah Cubaan", "Badge Diperoleh"]);
-
-        const sorted = [...selectedStudents].sort((a,b) => a.name.localeCompare(b.name, "ms"));
-        sorted.forEach((s, i) => {
-          rows.push([
-            i + 1,
-            s.name,
-            s.highestLevel || 0,
-            s.bestScore || 0,
-            s.bestTime == null ? "" : Number(s.bestTime).toFixed(1),
-            s.attempts || 0,
-            (s.badges || []).map(b => BADGES_META[b] || b).join(" | ")
-          ]);
-        });
-
-        const csv = "\uFEFF" + rows.map(r => r.map(csvEscape).join(",")).join("\n");
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `laporan_kelas_${selectedClassName.replace(/[\\/:*?"<>|]/g, "_")}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        setStatus("CSV berjaya dieksport.");
-      } catch (err) {
-        setStatus("Ralat exportClassCsv:\n" + err.message, true);
-      }
-    }
-
-    document.getElementById("addClassBtn").addEventListener("click", addClass);
-    document.getElementById("classNameInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") addClass();
-    });
-    document.getElementById("addStudentBtn").addEventListener("click", addStudent);
-    document.getElementById("studentNameInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") addStudent();
-    });
-    document.getElementById("sortStudentBtn").addEventListener("click", sortStudentsAZ);
-    document.getElementById("exportCsvBtn").addEventListener("click", exportClassCsv);
-    document.getElementById("refreshBtn").addEventListener("click", async () => {
-      await loadClasses();
-      if (selectedClassId) await loadStudents();
-      setStatus("Data berjaya direfresh.");
-    });
-    document.getElementById("openMuridBtn").addEventListener("click", () => {
-      window.open("./murid.html", "_blank");
-    });
-
-    await loadClasses();
-    setStatus("Sistem admin berjaya dimuatkan.");
-  </script>
+
+<div class="top-btn">
+<button class="btn blue" onclick="location.href='Murid_Pecahan.html'">Buka Versi Murid</button>
+<button class="btn green" onclick="loadAll()">Refresh</button>
+</div>
+
+<div class="hero">
+<h1>👩‍🏫 Pecahan Juta</h1>
+<p class="sub">Tambah kelas, taip nama murid dan semak ranking.</p>
+</div>
+
+<div class="grid">
+
+<section class="panel">
+<h2>Tambah Kelas</h2>
+<label>Nama kelas</label>
+<input id="className" placeholder="Contoh: 6 JUJUR">
+<button class="btn green" onclick="addClass()">Tambah Kelas</button>
+<div id="msg" class="msg">Sistem admin sedang dimuatkan.</div>
+
+<h2>Senarai Kelas</h2>
+<div id="classList"></div>
+</section>
+
+<section class="panel">
+<h2 id="openTitle">Buka Kelas</h2>
+
+<div id="studentPanel" style="display:none">
+<label>Nama murid</label>
+<input id="studentName" placeholder="Taip nama murid">
+<button class="btn green" onclick="addStudent()">Tambah Murid</button>
+
+<h2>Senarai Murid</h2>
+<div id="studentList"></div>
+
+<h2>Ranking Murid</h2>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Nama</th>
+<th>Skor</th>
+<th>Masa</th>
+<th>Tarikh</th>
+</tr>
+</thead>
+<tbody id="rankingBody"></tbody>
+</table>
+</div>
+</section>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+getFirestore, collection, addDoc, getDocs, deleteDoc, doc,
+query, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* GANTI DENGAN FIREBASE CONFIG CIKGU */
+const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "pecahan-juta---gamifikasi.firebaseapp.com",
+  projectId: "pecahan-juta---gamifikasi",
+  storageBucket: "pecahan-juta---gamifikasi.firebasestorage.app",
+  messagingSenderId: "...",
+  appId: "...",
+  measurementId: "..."
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let classes = [];
+let selectedClass = null;
+
+function msg(t){document.getElementById("msg").textContent=t}
+
+async function addClass(){
+const name=document.getElementById("className").value.trim();
+if(!name)return alert("Sila taip nama kelas.");
+await addDoc(collection(db,"classes"),{name,createdAt:serverTimestamp()});
+document.getElementById("className").value="";
+msg("Kelas berjaya ditambah.");
+loadAll();
+}
+
+async function deleteClass(id,name){
+if(!confirm("Padam kelas "+name+"?"))return;
+
+const sSnap=await getDocs(query(collection(db,"students"),where("classId","==",id)));
+for(const s of sSnap.docs){await deleteDoc(doc(db,"students",s.id));}
+
+const rSnap=await getDocs(query(collection(db,"scores"),where("classId","==",id)));
+for(const r of rSnap.docs){await deleteDoc(doc(db,"scores",r.id));}
+
+await deleteDoc(doc(db,"classes",id));
+selectedClass=null;
+document.getElementById("studentPanel").style.display="none";
+msg("Kelas telah dipadam.");
+loadAll();
+}
+
+async function loadClasses(){
+const snap=await getDocs(collection(db,"classes"));
+classes=[];
+snap.forEach(d=>classes.push({id:d.id,...d.data()}));
+classes.sort((a,b)=>a.name.localeCompare(b.name));
+
+const box=document.getElementById("classList");
+box.innerHTML="";
+
+if(classes.length===0){
+box.innerHTML="<p class='muted'>Belum ada kelas.</p>";
+return;
+}
+
+classes.forEach(c=>{
+const div=document.createElement("div");
+div.className="class-card";
+div.innerHTML=`
+<div>
+<div class="title">${c.name}</div>
+<div class="muted">Tekan buka untuk tambah murid</div>
+</div>
+<div>
+<button class="btn blue" onclick="openClass('${c.id}')">Buka</button>
+<button class="btn red" onclick="deleteClass('${c.id}','${c.name.replaceAll("'","\\'")}')">Padam</button>
+</div>`;
+box.appendChild(div);
+});
+}
+
+async function openClass(id){
+selectedClass=classes.find(c=>c.id===id);
+document.getElementById("studentPanel").style.display="block";
+document.getElementById("openTitle").textContent="Kelas: "+selectedClass.name;
+await loadStudents();
+await loadRanking();
+}
+
+async function addStudent(){
+if(!selectedClass)return alert("Sila buka kelas dahulu.");
+const name=document.getElementById("studentName").value.trim().toUpperCase();
+if(!name)return alert("Sila taip nama murid.");
+
+await addDoc(collection(db,"students"),{
+name,
+classId:selectedClass.id,
+className:selectedClass.name,
+createdAt:serverTimestamp()
+});
+
+document.getElementById("studentName").value="";
+loadStudents();
+}
+
+async function deleteStudent(id,name){
+if(!confirm("Padam nama "+name+"?"))return;
+await deleteDoc(doc(db,"students",id));
+loadStudents();
+}
+
+async function loadStudents(){
+const box=document.getElementById("studentList");
+box.innerHTML="";
+
+const snap=await getDocs(query(collection(db,"students"),where("classId","==",selectedClass.id)));
+let arr=[];
+snap.forEach(d=>arr.push({id:d.id,...d.data()}));
+arr.sort((a,b)=>a.name.localeCompare(b.name));
+
+if(arr.length===0){
+box.innerHTML="<p class='muted'>Belum ada nama murid.</p>";
+return;
+}
+
+arr.forEach(s=>{
+const div=document.createElement("div");
+div.className="student-card";
+div.innerHTML=`
+<div>
+<div class="title">${s.name}</div>
+<div class="muted">${s.className}</div>
+</div>
+<button class="btn red" onclick="deleteStudent('${s.id}','${s.name.replaceAll("'","\\'")}')">Padam</button>`;
+box.appendChild(div);
+});
+}
+
+async function loadRanking(){
+const body=document.getElementById("rankingBody");
+body.innerHTML="";
+
+const snap=await getDocs(query(collection(db,"scores"),where("classId","==",selectedClass.id)));
+let arr=[];
+snap.forEach(d=>arr.push(d.data()));
+
+arr.sort((a,b)=>(b.score-a.score)||(a.time-b.time));
+
+if(arr.length===0){
+body.innerHTML="<tr><td colspan='5'>Belum ada skor.</td></tr>";
+return;
+}
+
+arr.forEach((s,i)=>{
+const dateField = s.updatedAt || s.createdAt;
+const date = dateField?.toDate ? dateField.toDate().toLocaleString("ms-MY") : "-";
+body.innerHTML+=`
+<tr>
+<td>${i+1}</td>
+<td>${s.name}</td>
+<td>${s.score}/15</td>
+<td>${s.time}s</td>
+<td>${date}</td>
+</tr>`;
+});
+}
+
+async function loadAll(){
+await loadClasses();
+if(selectedClass){
+const id=selectedClass.id;
+selectedClass=classes.find(c=>c.id===id);
+if(selectedClass)await openClass(id);
+}
+msg("Sistem admin berjaya dimuatkan.");
+}
+
+window.addClass=addClass;
+window.deleteClass=deleteClass;
+window.openClass=openClass;
+window.addStudent=addStudent;
+window.deleteStudent=deleteStudent;
+window.loadAll=loadAll;
+
+loadAll();
+</script>
+
 </body>
 </html>
